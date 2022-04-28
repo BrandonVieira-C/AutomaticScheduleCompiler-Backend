@@ -1,0 +1,40 @@
+First need to:
+Insert all the employees
+Add each employees preferrences
+Create all the shift objects required for each day for each day
+Create algorithm:
+    Find top priority employee
+    Find their top preferrence
+    Check if their prferred shift is available
+        if it is, assign them to it, and find their next preferred shift, and repeat
+        else 
+            Find their next preference, and repeat
+Once the employee has been given 5 shifts
+Go to next next in priority employee
+and repeat algorithm
+
+
+
+        getNextMostSeniorEmployee();
+        getThatEmployeesNextPreferenceShift();
+        checkIfPreferredShiftAvailable(); 
+        // if it is:
+        // 1. assign the employee to the shift
+        // 2. get that employees next prefered shift
+        //      a. if the employee has 4 shifts already, get the next most senior employee
+        // if it is not available:
+        // 1. get their next preferred shift
+        // if none of their preferred shifts are available:
+        // 1. get their preferred timeslot
+        // 2. iterate through the remaining shifts with that timeslot
+        // 3. assign them to the first eligble shift
+        // 4. continue iteration until employee has 4 shifts
+        // if there are no more shifts with their desired timeslot:
+        // 1. find their next preferred timeslot
+        // 2. iterate through the remaining shifts 
+        // 3. assign them to the shifts that have their preferred timeslot
+        // what matters is that all the shifts are filled. So if at the end,
+        // the hashmap of shifts is empty, break the method. 
+        // 
+        // if the last employee has been iterated through and they have 4 shifts:
+        // 1. restart the algorithm at step: "getMostSeniorEmployee();"

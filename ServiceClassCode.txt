@@ -1,0 +1,100 @@
+ getQueueOfEmployees();
+        getNextMostSeniorEmployee();
+        getThatEmployeesNextPreferenceShift();
+        checkIfPreferredShiftAvailable(); 
+        // if it is:
+        // 1. assign the employee to the shift
+        // 2. get that employees next prefered shift
+        //      a. if the employee has 4 shifts already, get the next most senior employee
+        // if it is not available:
+        // 1. get their next preferred shift
+        // if none of their preferred shifts are available:
+        // 1. get their preferred timeslot
+        // 2. iterate through the remaining shifts with that timeslot
+        // 3. assign them to the first eligble shift
+        // 4. continue iteration until employee has 4 shifts
+        // if there are no more shifts with their desired timeslot:
+        // 1. find their next preferred timeslot
+        // 2. iterate through the remaining shifts 
+        // 3. assign them to the shifts that have their preferred timeslot
+        // what matters is that all the shifts are filled. So if at the end,
+        // the hashmap of shifts is empty, break the method. 
+        // 
+        // if the last employee has been iterated through and they have 4 shifts:
+        // 1. restart the algorithm at step: "getMostSeniorEmployee();"
+
+        return null;
+    }
+
+    private EmployeeDTO getNextMostSeniorEmployee(Queue<EmployeeDTO> list) {
+        if (list.isEmpty()) {
+            convertEmployeeDto();
+        }
+
+
+
+
+        return null;
+        
+
+    }
+    private Queue<EmployeeDTO> convertEmployeeDto() {
+        List<Employee> list = new LinkedList<>();
+        Queue<EmployeeDTO> returnList = new Queue<>();
+        for (Employee entity : list) {
+            EmployeeDTO dto = new EmployeeDTO();
+            dto.setEmpNo(entity.getEmpNo());
+            dto.setFirstName(entity.getFirstName());
+            dto.setFullTime(entity.getFullTime());
+            dto.setHireDate(entity.getHireDate());
+            dto.setLastName(entity.getLastName());
+            List<PreferredShifts> shiftsEntityList = entity.getPreferredShifts();
+            List<PreferredShiftsDTO> shiftsDtoList = convertShiftsDto(shiftsEntityList);
+            List<PreferredTimeslot> timeslotEntityList = entity.getPreferredTimeslot();
+            List<PreferredTimeslotDTO> timeslotDtoList = convertTimeslotDto(timeslotEntityList);
+            returnList.add(dto);
+        }
+        return returnList;
+    }
+
+    private List<PreferredShiftsDTO> convertShiftsDto(List<PreferredShifts> list) {
+        List<PreferredShiftsDTO> returnList = new LinkedList<>();
+        for (PreferredShifts shift : list) {
+            PreferredShiftsDTO dto = new PreferredShiftsDTO();
+            dto.setDay(shift.getDay());
+            dto.setTimeslot(shift.getTimeslot());
+            dto.setPrefLevel(shift.getPrefLevel());
+            returnList.add(dto);
+        }
+        return returnList;
+    } 
+
+    private List<PreferredTimeslotDTO> convertTimeslotDto(List<PreferredTimeslot> list) {
+        List<PreferredTimeslotDTO> returnList = new LinkedList<>();
+        for (PreferredTimeslot timeslot : list) {
+            PreferredTimeslotDTO dto = new PreferredTimeslotDTO();
+            dto.setTimeslot(timeslot.getTimeslot());
+            dto.setPrefLevel(timeslot.getPrefLevel());
+            returnList.add(dto);
+        }
+        return returnList;
+    }
+
+    private List<ShiftDTO> createListOpenings() {
+        List<Shift> listOfShifts = (List<Shift>) shiftRepo.findAll();
+
+        List<ShiftDTO> shiftDtos = new LinkedList<>();
+        for (Shift entity : listOfShifts) {
+            ShiftDTO dto = new ShiftDTO();
+            dto.setCurrStaffed(entity.getCurrStaffed());
+            dto.setDay(entity.getDay());
+            dto.setTimeslot(entity.getTimeslot());
+            dto.setStaffNeeded(entity.getStaffNeeded();
+            shiftDtos.add(dto);         
+        }
+
+        return shiftDtos;
+
+    }
+
+    

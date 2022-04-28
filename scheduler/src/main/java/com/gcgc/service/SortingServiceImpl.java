@@ -55,6 +55,7 @@ public class SortingServiceImpl {
         List<EmployeeDTO> employeeDTOList = new LinkedList<>();
         Queue<PreferredShiftsDTO> queuePreferredShiftsDTOList = new LinkedList<>();
         Queue<PreferredTimeslotDTO> queuePreferredTimeslotDTOList = new LinkedList<>();
+
         Queue<EmployeeDTO> queueOfEmployeeDTO = new LinkedList<>();
         for (Employee employeeEntity : employeeEntityList) {
             EmployeeDTO employeeDTO = new EmployeeDTO();
@@ -69,13 +70,8 @@ public class SortingServiceImpl {
             queuePreferredShiftsDTOList = getEmployeePreferredShiftsAsQueue(employeeDTO.getEmpNo());
         
             // convert this entitys list of timeslots into queue of dto
-            List<PreferredTimeslot> preferredTimeSlotEntityList = preferredTimeslotRepo.getEmployeesPreferredTimeslotsInOrder(employeeEntity.getEmpNo());
-            for (PreferredTimeslot preferredTimeslotEntity : preferredTimeSlotEntityList) {
-                PreferredTimeslotDTO preferredTimeslotDTO = new PreferredTimeslotDTO();
-                preferredTimeslotDTO.setTimeslot(preferredTimeslotEntity.getTimeslot());
-                preferredTimeslotDTO.setPrefLevel(preferredTimeslotEntity.getPrefLevel());
-                queuePreferredTimeslotDTOList.add(preferredTimeslotDTO);
-            }
+            queuePreferredTimeslotDTOList = getEmployeePreferredTimeslotAsQueue(employeeDTO.getEmpNo());
+
             employeeDTOList.add(employeeDTO);
         }
 
@@ -104,10 +100,6 @@ public class SortingServiceImpl {
                 nextPreferredShift = queuePreferredShiftsDTOList.remove(); 
             }
 
-            // *** Getting confused on why I need the while loop. Maybe it can just be a if
-            // i have a shift locked, if i can assign the employee to the shift
-            // we need to keep the employee and move to the next shift
-            
             for (ShiftDTO shiftDTO : shiftDTOList) {
                 if (shiftDTO.getCurrStaffed() == shiftDTO.getStaffNeeded()) {
                     shiftDTOList.remove(shiftDTO);
@@ -116,7 +108,6 @@ public class SortingServiceImpl {
                 int i = 1;
                 HashMap<Integer, Integer> mapOfEmployeeNumbers = new HashMap<>();
                 for (EmployeeDTO employeeDTO : shiftDTO.getEmployeeList()) {
-                    
                     mapOfEmployeeNumbers.put(i, employeeDTO.getEmpNo());
                     i++;
                 }
@@ -129,7 +120,7 @@ public class SortingServiceImpl {
                     shiftDTO.setCurrStaffed(shiftDTO.getCurrStaffed() + 1);
                     currentEmployee.setShiftsGiven(currentEmployee.getShiftsGiven() + 1);
                     if (queuePreferredShiftsDTOList.isEmpty()) {
-                        // assign shifts according to timeslot preferences
+                        shiftDTOList = assignShiftBasedOnTimeslotPreference(currentEmployee, shiftDTOList);
                     } 
                     else {
                         nextPreferredShift = queuePreferredShiftsDTOList.remove();
@@ -152,6 +143,67 @@ public class SortingServiceImpl {
             queuePreferredShiftsDTOList.add(preferredShiftDTO);
         }
         return queuePreferredShiftsDTOList;
+    }
+
+    private Queue<PreferredTimeslotDTO> getEmployeePreferredTimeslotAsQueue(Integer empNo) {
+        Queue<PreferredTimeslotDTO> queuePreferredShiftsDTOList = new LinkedList<>();
+
+        List<PreferredTimeslot> preferredTimeslotEntityList = preferredTimeslotRepo.getEmployeesPreferredTimeslotsInOrder(empNo);
+        for (PreferredTimeslot preferredTimeslotEntity : preferredTimeslotEntityList) {
+            PreferredTimeslotDTO preferredTimeslotDTO = new PreferredTimeslotDTO();
+            preferredTimeslotDTO.setTimeslot(preferredTimeslotEntity.getTimeslot());
+            preferredTimeslotDTO.setPrefLevel(preferredTimeslotEntity.getPrefLevel());
+            queuePreferredShiftsDTOList.add(preferredTimeslotDTO);
+        }
+        return queuePreferredShiftsDTOList;
+        
+
+    }
+
+    private List<ShiftDTO> assignShiftBasedOnTimeslotPreference(EmployeeDTO currentEmployee, List<ShiftDTO> shiftDTOList) {
+        Queue<PreferredTimeslotDTO> queuePreferredTimeslotDTOList = new LinkedList<>();
+        PreferredTimeslotDTO nextPreferredTimeslot = new PreferredTimeslotDTO();
+        while (true) {
+            if (shiftDTOList.isEmpty()) {
+                break;
+            }
+
+            if (currentEmployee.getShiftsGiven() == 4) {
+                continue;
+            } else {
+                Integer empNo = currentEmployee.getEmpNo();
+                queuePreferredTimeslotDTOList = getEmployeePreferredTimeslotAsQueue(empNo);
+                nextPreferredTimeslot = queuePreferredTimeslotDTOList.remove(); 
+            }
+
+            for (ShiftDTO shiftDTO : shiftDTOList) {
+                if (shiftDTO.getCurrStaffed() == shiftDTO.getStaffNeeded()) {
+                    shiftDTOList.remove(shiftDTO);
+                    continue;
+                }
+                int i = 1;
+                HashMap<Integer, Integer> mapOfEmployeeNumbers = new HashMap<>();
+                for (EmployeeDTO employeeDTO : shiftDTO.getEmployeeList()) {
+                    
+                    mapOfEmployeeNumbers.put(i, employeeDTO.getEmpNo());
+                    i++;
+                }
+               
+                if (shiftDTO.getTimeslot() == nextPreferredTimeslot.getTimeslot()  
+                && currentEmployee.getShiftsGiven() <= 4
+                && !mapOfEmployeeNumbers.containsValue(currentEmployee.getEmpNo())) {
+                    shiftDTO.addEmployee(currentEmployee);
+                    shiftDTO.setCurrStaffed(shiftDTO.getCurrStaffed() + 1);
+                    currentEmployee.setShiftsGiven(currentEmployee.getShiftsGiven() + 1);
+                    if (queuePreferredTimeslotDTOList.isEmpty()) {
+                        return shiftDTOList;
+                    } 
+                    else {
+                        nextPreferredTimeslot = queuePreferredTimeslotDTOList.remove();
+
+                    }
+                }
+        return shiftDTOList;
     }
 }
 
